@@ -23,7 +23,7 @@ call gradlew assembleRelease
 cd ..
 
 echo generated apk in: 
-cmd /k echo android/app/build/outputs/apk/debug/
+echo android/app/build/outputs/apk/debug/
 echo OR
 cmd /k echo android/app/build/outputs/apk/release/app-release.apk
 :: TODO: https://stackoverflow.com/questions/2048509/how-to-echo-with-different-colors-in-the-windows-command-line

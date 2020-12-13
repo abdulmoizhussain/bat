@@ -18,10 +18,16 @@ next
 
 while (1)
   set capacityResults = wmiServices.ExecQuery("select * from batterystatus")
-  for each capacityResult in capacityResults
-    remaining = capacityResult.RemainingCapacity
-    isCharging = capacityResult.Charging
-  next
+
+  ' accessing 1st battery.
+  ' source: https://stackoverflow.com/a/2378839
+  remaining = capacityResults.ItemIndex(0).RemainingCapacity
+  isCharging = capacityResults.ItemIndex(0).Charging
+
+  'for each capacityResult in capacityResults
+  '  remaining = capacityResult.RemainingCapacity
+  '  isCharging = capacityResult.Charging
+  'next
 
   batteryPercentage = ((remaining / fullCapacity) * 100) mod 100
   If (isCharging) and (batteryPercentage > 90) Then

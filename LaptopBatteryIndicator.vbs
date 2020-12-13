@@ -24,10 +24,10 @@ while (1)
   next
 
   batteryPercentage = ((remaining / fullCapacity) * 100) mod 100
-  If (isCharging) and (batteryPercentage > 84) Then
-    msgbox "85% charged. REMOVE CHARGER !", vbExclamation, "Warning!"
-  ElseIf (not isCharging) and (batteryPercentage < 36) Then
-    msgbox "36% battery remaining. CHARGE LAPTOP !", vbExclamation, "Warning!"
+  If (isCharging) and (batteryPercentage > 90) Then
+    msgbox batteryPercentage& "% charged. REMOVE CHARGER !", vbExclamation, "Warning!"
+  ElseIf (not isCharging) and (batteryPercentage < 25) Then
+    msgbox batteryPercentage& "% battery remaining. CHARGE LAPTOP !", vbExclamation, "Warning!"
   End If
 
   wscript.sleep 300000 ' 5 minutes (in miliseconds)

@@ -16,33 +16,7 @@ title_ac="On AC Power"
 title_dc="On Battery Power"
 
 while true; do
-  if [ $(acpi -b | grep -c Charging) -eq 1 ]; then
-    # When laptop is charging.
-
-    # only used when a specific battery is selected and notify_only_when_all_the_batteries_are_full_or_low is false.
-    battery_percent=$(acpi -b | grep "Battery $battery_to_watch" | grep -P -o '[0-9]+(?=%)')
-
-    if $notify_only_when_all_the_batteries_are_full_or_low; then
-      are_batteries_full=true
-      for i in $(acpi -b | grep -P -o '[0-9]+(?=%)'); do
-        if [ $i -lt $full_battery_percent ]; then
-          are_batteries_full=false
-          break
-        fi
-      done
-      if $are_batteries_full; then
-        msg="Batteries are $full_battery_percent% charged.\nRemove Charger."
-
-        notify-send "$title_ac" "$msg"
-        zenity --warning --title "$title_ac" --text "$msg" --width 200 &
-      fi
-    elif [ $battery_percent -gt $full_battery_percent ]; then
-      msg="Battery $battery_percent% charged.\nRemove Charger."
-
-      notify-send "$title_ac" "$msg"
-      zenity --warning --title "$title_ac" --text "$msg" --width 200 &
-    fi
-  else
+  if [ $(acpi -b | grep -c Discharging) -eq 1 ]; then
     # When laptop is NOT charging.
 
     # only used when a specific battery is selected and notify_only_when_all_the_batteries_are_full_or_low is false.
@@ -57,17 +31,43 @@ while true; do
         fi
       done
       if $are_batteries_low; then
-        msg="Batteries are below $low_battery__percent%\nPlease Charge."
+        msg="~$low_battery__percent% power remaining.\nPlease Charge."
 
         notify-send "$title_dc" "$msg"
         zenity --warning --title "$title_dc" --text "$msg" --width 200 &
       fi
       # if are_batteries_low
-    elif [ $battery_percent -lt $low_battery__percent ]; then
-      msg="$battery_percent% battery remaining.\nPlease Charge."
+    elif [ $battery_percent -lt 20 ]; then
+      msg="$battery_percent% power remaining.\nPlease Charge."
 
       notify-send "$title_dc" "$msg"
       zenity --warning --title "$title_dc" --text "$msg" --width 200 &
+    fi
+  else
+    # When laptop is charging.
+
+    # only used when a specific battery is selected and notify_only_when_all_the_batteries_are_full_or_low is false.
+    battery_percent=$(acpi -b | grep "Battery $battery_to_watch" | grep -P -o '[0-9]+(?=%)')
+
+    if $notify_only_when_all_the_batteries_are_full_or_low; then
+      are_batteries_full=true
+      for i in $(acpi -b | grep -P -o '[0-9]+(?=%)'); do
+        if [ $i -lt $full_battery_percent ]; then
+          are_batteries_full=false
+          break
+        fi
+      done
+      if $are_batteries_full; then
+        msg="Laptop ~$full_battery_percent% charged.\nRemove Charger."
+
+        notify-send "$title_ac" "$msg"
+        zenity --warning --title "$title_ac" --text "$msg" --width 200 &
+      fi
+    elif [ $battery_percent -gt $full_battery_percent ]; then
+      msg="Laptop $battery_percent% charged.\nRemove Charger."
+
+      notify-send "$title_ac" "$msg"
+      zenity --warning --title "$title_ac" --text "$msg" --width 200 &
     fi
   fi
 

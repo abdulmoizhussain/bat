@@ -37,7 +37,7 @@ while true; do
         zenity --warning --title "$title_dc" --text "$msg" --width 200 &
       fi
       # if are_batteries_low
-    elif [ $battery_percent -lt 20 ]; then
+    elif [ $battery_percent -lt $low_battery__percent ]; then
       msg="$battery_percent% power remaining.\nPlease Charge."
 
       notify-send "$title_dc" "$msg"
@@ -71,6 +71,6 @@ while true; do
     fi
   fi
 
-  # sleep 4m # Sleep for 5 minutes
+  # sleep 4m # Sleep for m minutes
   sleep $sleep_time_in_seconds
 done

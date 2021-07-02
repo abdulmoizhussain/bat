@@ -7,8 +7,10 @@
 set locator = CreateObject("WbemScripting.SWbemLocator")
 set wmiServices = locator.ConnectServer(".","root\wmi")
 set capacityResults = wmiServices.ExecQuery("select * from batteryfullchargedcapacity")
+
+fullCapacity = 0
 for each capacityResult in capacityResults
-   fullCapacity = capacityResult.FullChargedCapacity
+  fullCapacity = fullCapacity + capacityResult.FullChargedCapacity
 next
 
 ' Source of "vbExclamation" :
@@ -21,20 +23,26 @@ while (1)
 
   ' accessing 1st battery.
   ' source: https://stackoverflow.com/a/2378839
-  remaining = capacityResults.ItemIndex(0).RemainingCapacity
-  isCharging = capacityResults.ItemIndex(0).Charging
+  ' remaining = capacityResults.ItemIndex(0).RemainingCapacity
+  ' isCharging = capacityResults.ItemIndex(0).Charging
+  
+  isCharging = 0
+  remaining = 0
 
-  'for each capacityResult in capacityResults
-  '  remaining = capacityResult.RemainingCapacity
-  '  isCharging = capacityResult.Charging
-  'next
-
+  for each capacityResult in capacityResults
+    remaining = remaining + capacityResult.RemainingCapacity
+    If (capacityResult.Charging) Then
+      isCharging = capacityResult.Charging
+    End If
+  next
+  
   batteryPercentage = ((remaining / fullCapacity) * 100) mod 100
-  If (isCharging) and (batteryPercentage > 90) Then
+  
+  If (isCharging) and (batteryPercentage > 95) Then
     msgbox batteryPercentage& "% charged. REMOVE CHARGER !", vbExclamation, "Warning!"
-  ElseIf (not isCharging) and (batteryPercentage < 25) Then
+  ElseIf (not isCharging) and (batteryPercentage < 20) Then
     msgbox batteryPercentage& "% battery remaining. CHARGE LAPTOP !", vbExclamation, "Warning!"
   End If
-
-  wscript.sleep 300000 ' 5 minutes (in miliseconds)
+  
+  wscript.sleep 1000*60*5 ' 5 minutes (in miliseconds)
 wend

@@ -22,3 +22,7 @@ Will need to execute some files with Administrator.
     - coz this script needs to be executed with bash.
 - Can name it like: Battery Notifier
 - Now the script will be automatically started in background upon next restart.
+
+### Optional:
+- If you want to modify the reminding-interval, minimum-battery and maximum-battery, you can modify these variables `sleep_time_in_seconds`, `low_battery__percent` and `full_battery_percent` respectively.
+- You can also disable the notifications by commenting out the `notify-send ...` commands.

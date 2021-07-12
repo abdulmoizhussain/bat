@@ -1,84 +1,48 @@
-#!/usr/bin/env bash
+' Lithium Ion Battery Life Tips:
+' https://www.howtogeek.com/169669/debunking-battery-life-myths-for-mobile-phones-tablets-and-laptops/
+' https://batteryuniversity.com/index.php/learn/article/how_to_prolong_lithium_based_batteries
 
-# Check shell dependencies by following commands, if they exist, then script will work fine otherwise install them:
-# upower -h
-# bc -h
-# zenity -h
-# notify-send --help
-# grep --help
+' complete VBS script source: https://thegeekpage.com/battery-full-charged-notification-in-windows-10/
 
-# Helpful Sources:
-# https://tldp.org/LDP/abs/html/comparison-ops.html
-# https://stackoverflow.com/a/16854326
-# https://stackoverflow.com/a/34286545
-# How to convert floating point number to integer:
-# https://unix.stackexchange.com/a/89748
-# Source, Bash comparison operators:
-# https://tldp.org/LDP/abs/html/comparison-ops.html
+set locator = CreateObject("WbemScripting.SWbemLocator")
+set wmiServices = locator.ConnectServer(".","root\wmi")
+set capacityResults = wmiServices.ExecQuery("select * from batteryfullchargedcapacity")
 
-full_battery_percent=95
-low_battery__percent=20
+fullCapacity = 0
+for each capacityResult in capacityResults
+  fullCapacity = fullCapacity + capacityResult.FullChargedCapacity
+next
 
-sleep_time_in_seconds=300 # 5 minutes
+' Source of "vbExclamation" :
+' https://devblogs.microsoft.com/scripting/how-can-i-play-a-sound-each-time-a-message-box-is-displayed/
+' Source of else if statement's syntax:
+' https://www.promotic.eu/en/pmdoc/ScriptLangs/VBScript/Statmn/IfThenElse.htm
 
-title_ac="On AC Power"
-title_dc="On Battery Power"
-energy_full_total='0'
+while (1)
+  set capacityResults = wmiServices.ExecQuery("select * from batterystatus")
 
-while read battery_path; do
+  ' accessing 1st battery.
+  ' source: https://stackoverflow.com/a/2378839
+  ' remaining = capacityResults.ItemIndex(0).RemainingCapacity
+  ' isCharging = capacityResults.ItemIndex(0).Charging
 
-  temp=$(upower -i $battery_path | grep 'energy-full:' | grep -Eo '[0-9]+\.[0-9]+')
-  energy_full_total=$(bc -l <<<"(${temp}*100)+${energy_full_total}")
+  isCharging = 0
+  remaining = 0
 
-done <<<$(upower -e | grep BAT)
-# this is why we need to create the while loop like this:
-# bash for loop save value in outer scope variable.
+  for each capacityResult in capacityResults
+    remaining = remaining + capacityResult.RemainingCapacity
+    If (capacityResult.Charging) Then
+      isCharging = capacityResult.Charging
+    End If
+  next
 
-while true; do
-  energy_now_total='0'
+  batteryPercentage = ((remaining / fullCapacity) * 100) mod 100
 
-  while read battery_path; do
+  If (isCharging) and (batteryPercentage > 95) Then
+    msgbox batteryPercentage& "% charged. REMOVE CHARGER !", vbExclamation, "Warning!"
+  ElseIf (not isCharging) and (batteryPercentage < 20) Then
+    msgbox batteryPercentage& "% battery remaining. CHARGE LAPTOP !", vbExclamation, "Warning!"
+  End If
 
-    temp=$(upower -i $battery_path | grep 'energy:' | grep -Eo '[0-9]+\.[0-9]+')
-    energy_now_total=$(bc -l <<<"(${temp}*100)+${energy_now_total}")
-
-  done <<<$(upower -e | grep BAT)
-
-  energy_now_total=$(bc -l <<<"${energy_now_total}/${energy_full_total}*100")
-  # source,
-  energy_now_total=${energy_now_total%.*}
-
-  if [ $(upower -i $(upower -e | grep BAT) | grep 'state:' | grep -c discharging) -eq 1 ]; then
-    # when not charging
-
-    if [ $energy_now_total -le $low_battery__percent ]; then
-      msg="$energy_now_total% power remaining.\nPlease Charge."
-      notify-send "$title_dc" "$msg"
-      zenity --warning --title "$title_dc" --text "$msg" --width 200 &
-    fi
-
-  else
-    # when charging
-
-    if [ $energy_now_total -ge $full_battery_percent ]; then
-      msg="Laptop $energy_now_total% charged.\nRemove Charger."
-      notify-send "$title_ac" "$msg"
-      zenity --warning --title "$title_ac" --text "$msg" --width 200 &
-    fi
-
-  fi
-
-  # sleep 5m # Sleep for 5 minutes
-  sleep $sleep_time_in_seconds
-done
-
-# to keep this at startup:
-# Search for 'Startup Applications Preferences'
-# Click 'Add' to create a new 'Additional startup program'
-# Browse for the the Linux script file and select 'LaptopBatteryNotifier.sh'
-# Now modify the command (coz this script needs to be executed with bash):
-#  /home/username/LaptopBatteryNotifier.sh
-#  to this:
-#  bash /home/username/LaptopBatteryNotifier.sh
-# Can name it like: Battery Notifier
-# Now the script will be automatically started in background upon next restart.
+  wscript.sleep 1000*60*5 ' 5 minutes (in miliseconds)
+wend

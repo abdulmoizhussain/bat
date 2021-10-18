@@ -26,11 +26,10 @@ title_dc="On Battery Power"
 energy_full_total='0'
 
 while read battery_path; do
-
-  temp=$(upower -i $battery_path | grep 'energy-full:' | grep -Eo '[0-9]+\.[0-9]+')
+  temp=$(upower -i $battery_path | grep 'energy-full:' | grep -Eo '[0-9]+(\.[0-9]+)*')
   energy_full_total=$(bc -l <<<"(${temp}*100)+${energy_full_total}")
-
 done <<<$(upower -e | grep BAT)
+energy_full_total=${energy_full_total%.*}
 # this is why we need to create the while loop like this:
 # bash for loop save value in outer scope variable.
 
@@ -38,15 +37,18 @@ while true; do
   energy_now_total='0'
 
   while read battery_path; do
-
-    temp=$(upower -i $battery_path | grep 'energy:' | grep -Eo '[0-9]+\.[0-9]+')
+    temp=$(upower -i $battery_path | grep 'energy:' | grep -Eo '[0-9]+(\.[0-9]+)*')
     energy_now_total=$(bc -l <<<"(${temp}*100)+${energy_now_total}")
-
   done <<<$(upower -e | grep BAT)
-
-  energy_now_total=$(bc -l <<<"${energy_now_total}/${energy_full_total}*100")
-  # source,
   energy_now_total=${energy_now_total%.*}
+
+  if [ $energy_now_total -ge $energy_full_total ]; then
+    energy_now_total="100"
+  else
+    energy_now_total=$(bc -l <<<"${energy_now_total}/${energy_full_total}*100")
+    energy_now_total=${energy_now_total%.*}
+  fi
+
 
   if [ $(upower -i $(upower -e | grep BAT) | grep 'state:' | grep -c discharging) -eq 1 ]; then
     # when not charging

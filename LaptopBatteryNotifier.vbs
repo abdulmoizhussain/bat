@@ -36,7 +36,13 @@ while (1)
     End If
   next
 
-  batteryPercentage = ((remaining / fullCapacity) * 100) mod 100
+  
+  If (remaining >= fullCapacity) Then
+    batteryPercentage = 100
+  Else
+    batteryPercentage = ((remaining / fullCapacity) * 100) mod 100
+  End If
+
 
   If (isCharging) and (batteryPercentage > 95) Then
     msgbox batteryPercentage& "% charged. REMOVE CHARGER !", vbExclamation, "Warning!"

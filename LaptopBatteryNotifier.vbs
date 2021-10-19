@@ -36,20 +36,14 @@ while (1)
     End If
   next
 
-
-  If (remaining >= fullCapacity) Then
-    batteryPercentage = 100
-  Else
-    batteryPercentage = ((remaining / fullCapacity) * 100) mod 100
-  End If
-
+  batteryPercentage = Round((remaining / fullCapacity) * 100)
 
   If (isCharging) and (batteryPercentage > 95) Then
-    msgbox batteryPercentage& "% charged. REMOVE CHARGER !", vbExclamation, "Warning!"
-  ElseIf (batteryPercentage >= 100) Then
-    msgbox batteryPercentage& "% charged. Please ignore if you have already removed the charger.", vbExclamation, "Warning!"
+    msgbox "Laptop "& batteryPercentage &"% charged. Remove Charger !", vbExclamation, "Warning!"
+  ElseIf (batteryPercentage == 100) Then
+    msgbox "Laptop "& batteryPercentage &"% charged."& vbNewLine &"Please ignore if you have already removed the charger.", vbExclamation, "Warning!"
   ElseIf (not isCharging) and (batteryPercentage < 20) Then
-    msgbox batteryPercentage& "% battery remaining. CHARGE LAPTOP !", vbExclamation, "Warning!"
+    msgbox batteryPercentage &"% battery remaining. Please charge !", vbExclamation, "Warning!"
   End If
 
   wscript.sleep 1000*60*5 ' 5 minutes (in miliseconds)

@@ -40,7 +40,7 @@ while (1)
 
   If (isCharging) and (batteryPercentage > 95) Then
     msgbox "Laptop "& batteryPercentage &"% charged. Remove Charger !", vbExclamation, "Warning!"
-  ElseIf (batteryPercentage == 100) Then
+  ElseIf (batteryPercentage = 100) Then
     msgbox "Laptop "& batteryPercentage &"% charged."& vbNewLine &"Please ignore if you have already removed the charger.", vbExclamation, "Warning!"
   ElseIf (not isCharging) and (batteryPercentage < 20) Then
     msgbox batteryPercentage &"% battery remaining. Please charge !", vbExclamation, "Warning!"
